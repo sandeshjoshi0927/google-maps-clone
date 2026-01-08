@@ -1,5 +1,6 @@
 import type { Place } from "../api/Place";
-import { useState } from "react";
+import { Fragment, useState } from "react";
+import { search } from "../api/search";
 
 interface LocationSearchProps {
   onPlaceClick: (place: Place) => void;
@@ -9,11 +10,26 @@ const LocationSearch = ({ onPlaceClick }: LocationSearchProps) => {
   const [places, setPlaces] = useState<Place[]>([]);
   const [term, setTerm] = useState("");
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    console.log("serarch api", term);
+    const places = await search(term);
+    setPlaces(places);
   };
+
+  const renderedContent = places.map((place) => (
+    <Fragment key={place.id}>
+      <p>{place.name}</p>
+      <button
+        className="bg-blue-500 text-white text-xs font-bold py-1 px-1 rounded"
+        onClick={() => onPlaceClick(place)}
+      >
+        GO
+      </button>
+      <div className="border-b w-full col-span-2" />
+    </Fragment>
+  ));
+
   return (
     <div>
       <form action="" onSubmit={handleSubmit}>
@@ -28,6 +44,10 @@ const LocationSearch = ({ onPlaceClick }: LocationSearchProps) => {
           onChange={(e) => setTerm(e.target.value)}
         />
       </form>
+
+      <div className="grid grid-cols-[1fr_40px] gap-2 mt-2 items-center">
+        {renderedContent}
+      </div>
     </div>
   );
 };
